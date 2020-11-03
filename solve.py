@@ -17,7 +17,7 @@ def rebuild_path(path,tg):
     y retorna una lista con el camino para llegar hasta tg, tg es una tupla, por ejemplo --> (1,1) o (2,2)
     que significa que se quiere conocer el camino para llegar a la posicion de la matriz (1,1) o (2,2)
 
-    Si no hay camino ,devuelve una lista con el camino que pudo lograr
+    Si no hay camino al tg devuelve una lista con solo el tg
     """
     i,j = tg
     ans = [tg]
@@ -41,6 +41,7 @@ def bfs(u):
         for j in range(len(board[i])):
             visited[i][j] = False if board[i][j] != 'x' else True
     q.append(u)
+    dist,max_dist = [[0 for _ in range(len(board[0]))] for _ in range(len(board))],0
     i_u,j_u = u
     l_i,l_j = u
     visited[i_u][j_u] = True
@@ -50,22 +51,27 @@ def bfs(u):
         for i,j in deltas:
             if(0 <= i_u+i < len(board) and 0 <= j_u+j < len(board[0]) and not visited[i_u+i][j_u+j]): 
                 path[i_u+i][j_u+j] = (i_u,j_u)
-                fuound = found or (i_u+i == 0) #llegue al final de la calle
                 visited[i_u+i][j_u+j] = True
+                dist[i_u+i][j_u+j] = dist[i_u][j_u]+1
                 q.append((i_u+i,j_u+j))
 
-        l_i,l_j = i_u,j_u
+        l_i,l_j,max_dist = i_u,j_u,max(max_dist,dist[i_u][j_u])
 
     ans = rebuild_path(path,(l_i,l_j))
-    return ans
+    return ans,max_dist
     
 
-def solve(u):
+def solve():
     global board
-    ans = bfs(u)
-    for i,j in ans:
+    path,fit,max_fit,max_path = None,0,0,None
+    for i in range(len(board[0])):#por todas las columnas mando a hacer un bfs desde la fila 0
+        path,fit = bfs((len(board)-1,i))
+        max_path = list(path) if fit > max_fit else max_path
+        max_fit = max(fit,max_fit)
+    for i,j in max_path:
         board[i][j] = 'O'
     print_board(board)
+    print("Fit:",max_fit+1)
 
 
 def main():
@@ -78,7 +84,7 @@ def main():
             line = stdin.readline().strip()
             board.append([c for c in line])
       
-        solve((r-1,0))
+        solve()
         print("\n\n")
         line = stdin.readline().strip()
 main()
